@@ -96,10 +96,19 @@ const Calendar: React.FC = () => {
     );
   };
 
+  const previousMonth = () => { }
+  const nextMonth = () => { }
+
   return (
-    <div id="calendar" className={style.calendar}>
-      {renderWeekdays()}
-      {buildGrid()}
+    <div className={style.calendar}>
+      <div className={style.navigation}>
+        <button onClick={previousMonth}>Previous</button>
+        <button onClick={nextMonth}>Next</button>
+      </div>
+      <div className={style.grid}>
+        {renderWeekdays()}
+        {buildGrid()}
+      </div>
     </div>
   );
 };

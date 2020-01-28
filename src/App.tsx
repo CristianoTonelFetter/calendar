@@ -1,59 +1,103 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import classNames from 'classnames';
 
 import style from './App.module.scss';
 
 const App: React.FC = () => {
+
+  const weekDays: String[] = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thurday',
+    'Friday',
+    'Saturday'
+  ];
+  const GRID_SIZE: number = 5 * 7;
+  const today: Date = new Date();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const renderWeekdays = (): React.ReactFragment => {
+    return (
+      <>
+        {weekDays.map(day => (<div className={style.header} key={`weekDay_${day}`}>{day}</div>))}
+      </>
+    );
+  }
+
+  const getDaysInMonth = (month: number, year: number): Date[] => {
+    const date = new Date(year, month, 1);
+    const days = [];
+
+    while (date.getMonth() === month) {
+      days.push(new Date(date));
+      date.setDate(date.getDate() + 1);
+    }
+
+    return days;
+  }
+
+  const buildGrid = (): React.ReactFragment => {
+    const month = selectedDate.getMonth();
+    const year = selectedDate.getFullYear();
+    const monthDays = getDaysInMonth(month, year);
+
+    // First week day of selected month
+    const startingWeekday = monthDays[0].getDay();
+
+    // If the month doesn't starts on monday, fill the gap before
+    if (startingWeekday > 1) {
+      for (let i = 1; i < startingWeekday; i++) {
+        // Clone selectedDate
+        const prevDay = new Date(selectedDate.getTime());
+
+        // Subtract one day
+        prevDay.setDate(prevDay.getDate() - i);
+
+        // Append item to the beginning of the array
+        monthDays.unshift(prevDay);
+      }
+    }
+
+    // 
+    const difference = GRID_SIZE - monthDays.length;
+
+    // Fill slots available at the end of days list
+    if (monthDays.length < GRID_SIZE) {
+      for (let i = 1; i <= difference; i++) {
+        // Clone selectedDate
+        const extraDay = new Date(monthDays[monthDays.length - i].getTime());
+
+        // Add one day
+        extraDay.setDate(extraDay.getDate() + i);
+
+        // Append item to the end of the array
+        monthDays.push(extraDay);
+      }
+    }
+
+    return (
+      <>
+        {
+          monthDays.map(d => (
+            <div
+              key={`monthDay_${d.toLocaleString()}`}
+              className={classNames(style.cell, d.getMonth() !== month && style.disabled)}
+            >
+              {d.getDate()}
+            </div>
+          ))
+        }
+      </>
+    );
+  }
+
   return (
     <div id="calendar" className={style.calendar}>
-      <div className={style.header}>Sunday</div>
-      <div className={style.header}>Monday</div>
-      <div className={style.header}>Tuesday</div>
-      <div className={style.header}>Wednesday</div>
-      <div className={style.header}>Thurday</div>
-      <div className={style.header}>Friday</div>
-      <div className={style.header}>Saturday</div>
-
-      <div className={classNames(style.cell, style.disabled)}>1</div>
-      <div className={style.cell}>2</div>
-      <div className={style.cell}>3</div>
-      <div className={style.cell}>4</div>
-      <div className={style.cell}>5</div>
-      <div className={style.cell}>6</div>
-      <div className={style.cell}>7</div>
-
-      <div className={style.cell}>8</div>
-      <div className={style.cell}>9</div>
-      <div className={style.cell}>10</div>
-      <div className={style.cell}>11</div>
-      <div className={style.cell}>12</div>
-      <div className={style.cell}>13</div>
-      <div className={style.cell}>14</div>
-
-      <div className={style.cell}>15</div>
-      <div className={style.cell}>16</div>
-      <div className={style.cell}>17</div>
-      <div className={style.cell}>18</div>
-      <div className={style.cell}>19</div>
-      <div className={style.cell}>20</div>
-      <div className={style.cell}>21</div>
-
-      <div className={style.cell}>22</div>
-      <div className={style.cell}>23</div>
-      <div className={style.cell}>24</div>
-      <div className={style.cell}>25</div>
-      <div className={style.cell}>26</div>
-      <div className={style.cell}>27</div>
-      <div className={style.cell}>28</div>
-
-      <div className={style.cell}>29</div>
-      <div className={style.cell}>30</div>
-      <div className={style.cell}>31</div>
-      <div className={style.cell}>1</div>
-      <div className={style.cell}>2</div>
-      <div className={style.cell}>3</div>
-      <div className={style.cell}>4</div>
+      {renderWeekdays()}
+      {buildGrid()}
     </div>
   );
 }

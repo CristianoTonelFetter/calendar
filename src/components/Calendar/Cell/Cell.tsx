@@ -1,20 +1,20 @@
 import React from 'react';
-
+import moment, { Moment } from 'moment';
 import classNames from 'classnames';
 
 import style from './Cell.module.scss';
 
 type Props = {
-  date: Date,
-  monthOfDisplay: number,
+  date: Moment,
+  className: string,
 }
 
 const CalendarCell: React.FC<Props> = (props) => {
-  const { date, monthOfDisplay } = props;
+  const { date, className } = props;
 
   return (
-    <div className={classNames(style.cell, date.getMonth() !== monthOfDisplay && style.disabled)}>
-      {date.getDate()}
+    <div className={classNames(style.cell, className)}>
+      {date.format('D')}
     </div>
   );
 }

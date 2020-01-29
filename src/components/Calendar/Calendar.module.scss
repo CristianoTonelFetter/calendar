@@ -31,6 +31,10 @@
         border-right: none;
       }
 
+      &.disabled {
+        color: #999999;
+      }
+
       &:nth-child(7n),
       &:nth-child(7n + 1) {
         &:not(.header) {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import moment, { Moment } from 'moment';
 
 import Cell from './Cell';
 
@@ -17,8 +18,7 @@ const Calendar: React.FC = () => {
     'Saturday',
   ];
   const GRID_SIZE: number = 5 * 7;
-  const today: Date = new Date();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState<Moment>(moment().startOf('month'));
 
   const renderWeekdays = (): React.ReactFragment => {
     return (
@@ -32,34 +32,34 @@ const Calendar: React.FC = () => {
     );
   };
 
-  const getDaysInMonth = (month: number, year: number): Date[] => {
-    const date = new Date(year, month, 1);
-    const days = [];
+  const getDaysInMonth = (date: Moment): Moment[] => {
+    const newDay = moment(selectedDate);
+    const days = [moment(newDay)];
 
-    while (date.getMonth() === month) {
-      days.push(new Date(date));
-      date.setDate(date.getDate() + 1);
+    while (newDay.format('YYYY/MM') === date.format('YYYY/MM')) {
+      const pushDate = moment(newDay.add(1, 'days'));
+      days.push(pushDate);
     }
 
     return days;
   };
 
+  const belongsToSelectedMonth = (date: Moment) => {
+    return date.format('MM') !== selectedDate.format('MM');
+  }
+
   const buildGrid = (): React.ReactFragment => {
-    const month = selectedDate.getMonth();
-    const year = selectedDate.getFullYear();
-    const monthDays = getDaysInMonth(month, year);
+    const currentDate = moment(selectedDate);
+    const monthDays = getDaysInMonth(currentDate);
 
     // First week day of selected month
-    const startingWeekday = monthDays[0].getDay();
+    const startingWeekday = moment(currentDate).day();
 
     // If the month doesn't starts on monday, fill the gap before
-    if (startingWeekday > 1) {
-      for (let i = 1; i < startingWeekday; i++) {
-        // Clone selectedDate
-        const prevDay = new Date(selectedDate.getTime());
-
+    if (startingWeekday > 0) {
+      for (let i = 1; i <= startingWeekday; i++) {
         // Subtract one day
-        prevDay.setDate(prevDay.getDate() - i);
+        const prevDay = moment(currentDate).subtract(i, 'days');
 
         // Append item to the beginning of the array
         monthDays.unshift(prevDay);
@@ -69,14 +69,11 @@ const Calendar: React.FC = () => {
     // Number of days left to fulfill the grid
     const difference = GRID_SIZE - monthDays.length;
 
-    // Fill slots available at the end of days list
+    // Fill slots at the end of days list if needed
     if (monthDays.length < GRID_SIZE) {
       for (let i = 1; i <= difference; i++) {
-        // Clone selectedDate
-        const extraDay = new Date(monthDays[monthDays.length - i].getTime());
-
         // Add one day
-        extraDay.setDate(extraDay.getDate() + i);
+        const extraDay = moment(monthDays[monthDays.length - i]).add(i, 'days');
 
         // Append item to the end of the array
         monthDays.push(extraDay);
@@ -87,8 +84,8 @@ const Calendar: React.FC = () => {
       <>
         {monthDays.map(date => (
           <Cell
-            key={`monthDay_${date.toLocaleString()}`}
-            monthOfDisplay={month}
+            key={`monthDay_${date.format('YYYY-MM-DD')}`}
+            className={belongsToSelectedMonth(date) ? style.disabled : ''}
             date={date}
           />
         ))}

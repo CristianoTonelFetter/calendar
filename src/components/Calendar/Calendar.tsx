@@ -93,8 +93,8 @@ const Calendar: React.FC = () => {
     );
   };
 
-  const previousMonth = () => { }
-  const nextMonth = () => { }
+  const previousMonth = (): void => setSelectedDate(moment(selectedDate).subtract(1, 'months'));
+  const nextMonth = (): void => setSelectedDate(moment(selectedDate).add(1, 'months'));
 
   return (
     <div className={style.calendar}>

@@ -1,11 +1,47 @@
-import React, { useState } from 'react';
+// Deps
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
 import moment, { Moment } from 'moment';
+import uuid from 'uuid/v4';
 
+// Components
+import Button from '@material-ui/core/Button';
 import Cell from './Cell';
+import ReminderEditor from './ReminderEditor';
 
+// Types
+import Reminder, { ReminderList } from '../../types/Reminder';
+
+// Redux
+import { AppState } from '../../reducers/rootReducer';
+import { AppActions } from '../../actions';
+import {
+  createReminder,
+  updateReminder,
+  buildCalendarPage,
+} from '../../actions/calendar/calendarActions';
+
+// Styles
 import style from './Calendar.module.scss';
+import { CalendarPage } from '../../types/CalendarPage';
 
-const Calendar: React.FC = () => {
+type DispatchToProps = {
+  createReminder: (item: Reminder) => void;
+  updateReminder: (item: Reminder) => void;
+  buildCalendarPage: (date: Moment) => void;
+};
+
+type StateToProps = {
+  currentView: Moment,
+  reminders: ReminderList;
+  page: CalendarPage;
+};
+
+type Props = DispatchToProps & StateToProps;
+
+const Calendar: React.FC<Props> = (props) => {
   // FORECAST API KEY 3c48573221636e07f91eb463895bb1bb
 
   const weekDays: String[] = [
@@ -17,8 +53,12 @@ const Calendar: React.FC = () => {
     'Friday',
     'Saturday',
   ];
-  const GRID_SIZE: number = 5 * 7;
-  const [selectedDate, setSelectedDate] = useState<Moment>(moment().startOf('month'));
+  const [selectedReminder, setSelectedReminder] = useState<Reminder>();
+  const { buildCalendarPage } = props
+
+  useEffect(() => {
+    buildCalendarPage(moment().startOf('month'));
+  }, [buildCalendarPage])
 
   const renderWeekdays = (): React.ReactFragment => {
     return (
@@ -32,53 +72,13 @@ const Calendar: React.FC = () => {
     );
   };
 
-  const getDaysInMonth = (date: Moment): Moment[] => {
-    const newDay = moment(selectedDate);
-    const days = [moment(newDay)];
-
-    while (newDay.format('YYYY/MM') === date.format('YYYY/MM')) {
-      const pushDate = moment(newDay.add(1, 'days'));
-      days.push(pushDate);
-    }
-
-    return days;
-  };
-
   const belongsToSelectedMonth = (date: Moment) => {
-    return date.format('MM') !== selectedDate.format('MM');
+    const { currentView } = props;
+    return date.format('MM') !== currentView.format('MM');
   }
 
   const buildGrid = (): React.ReactFragment => {
-    const currentDate = moment(selectedDate);
-    const monthDays = getDaysInMonth(currentDate);
-
-    // First week day of selected month
-    const startingWeekday = moment(currentDate).day();
-
-    // If the month doesn't starts on monday, fill the gap before
-    if (startingWeekday > 0) {
-      for (let i = 1; i <= startingWeekday; i++) {
-        // Subtract one day
-        const prevDay = moment(currentDate).subtract(i, 'days');
-
-        // Append item to the beginning of the array
-        monthDays.unshift(prevDay);
-      }
-    }
-
-    // Number of days left to fulfill the grid
-    const difference = GRID_SIZE - monthDays.length;
-
-    // Fill slots at the end of days list if needed
-    if (monthDays.length < GRID_SIZE) {
-      for (let i = 1; i <= difference; i++) {
-        // Add one day
-        const extraDay = moment(monthDays[monthDays.length - i]).add(i, 'days');
-
-        // Append item to the end of the array
-        monthDays.push(extraDay);
-      }
-    }
+    const { page: monthDays = [] } = props;
 
     return (
       <>
@@ -86,6 +86,8 @@ const Calendar: React.FC = () => {
           <Cell
             key={`monthDay_${date.format('YYYY-MM-DD')}`}
             className={belongsToSelectedMonth(date) ? style.disabled : ''}
+            onClickEvent={onClickEvent}
+            events={props.reminders}
             date={date}
           />
         ))}
@@ -93,21 +95,64 @@ const Calendar: React.FC = () => {
     );
   };
 
-  const previousMonth = (): void => setSelectedDate(moment(selectedDate).subtract(1, 'months'));
-  const nextMonth = (): void => setSelectedDate(moment(selectedDate).add(1, 'months'));
+  const previousMonth = (): void => props.buildCalendarPage(moment(props.currentView).subtract(1, 'months'));
+  const nextMonth = (): void => props.buildCalendarPage(moment(props.currentView).add(1, 'months'));
+
+  const onClickEvent = (reminder: Reminder): void => {
+    setSelectedReminder(reminder);
+  }
+
+  const unSelectEvent = (): void => setSelectedReminder(undefined);
+
+  const onSaveEvent = (reminder: Reminder): void => {
+    const { createReminder, updateReminder } = props;
+    if (reminder.id) {
+      // edit
+      updateReminder(reminder);
+    } else {
+      // create new, add id
+      createReminder({ ...reminder, id: uuid() });
+    }
+  }
 
   return (
-    <div className={style.calendar}>
-      <div className={style.navigation}>
-        <button onClick={previousMonth}>Previous</button>
-        <button onClick={nextMonth}>Next</button>
+    <>
+      <div className={style.calendar}>
+        <div className={style.navigation}>
+          <Button variant="contained" size="small" color="primary" onClick={previousMonth}>Previous</Button>
+          <h1>{props.currentView.format('MMMM YYYY')}</h1>
+          <Button variant="contained" size="small" color="primary" onClick={nextMonth}>Next</Button>
+        </div>
+
+        <div className={style.grid}>
+          {renderWeekdays()}
+          {buildGrid()}
+        </div>
       </div>
-      <div className={style.grid}>
-        {renderWeekdays()}
-        {buildGrid()}
-      </div>
-    </div>
+      {selectedReminder && (
+        <ReminderEditor
+          reminder={selectedReminder}
+          onClose={unSelectEvent}
+          onSave={onSaveEvent}
+        />
+      )}
+    </>
   );
 };
 
-export default Calendar;
+const mapStateToProps = (state: AppState): StateToProps => ({
+  currentView: state.calendar.currentView,
+  reminders: state.calendar.reminders,
+  page: state.calendar.page,
+});
+
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): DispatchToProps => ({
+  createReminder: bindActionCreators(createReminder, dispatch),
+  updateReminder: bindActionCreators(updateReminder, dispatch),
+  buildCalendarPage: bindActionCreators(buildCalendarPage, dispatch),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Calendar);

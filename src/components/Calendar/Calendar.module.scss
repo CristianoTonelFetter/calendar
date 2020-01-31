@@ -7,24 +7,26 @@
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 1em;
+    h1 {
+      margin: 0;
+    }
   }
 
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1.6em 1fr 1fr 1fr 1fr;
     grid-gap: 0;
     border: 1px solid #dfdfdf;
 
     .header {
-      background-color: #2e74b5;
+      background-color: #3f51b5;
       font-weight: bold;
       color: #ffffff;
       line-height: 1.6em;
       text-align: center;
     }
 
-    div {
+    > div {
       border-right: 1px solid #dfdfdf;
 
       &:nth-child(7n) {
@@ -41,6 +43,9 @@
           background-color: #eeeeee;
           &:not(.disabled) {
             color: #2e74b5;
+          }
+          &:hover {
+            background-color: #cfdfef;
           }
         }
       }

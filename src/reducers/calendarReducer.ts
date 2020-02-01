@@ -16,8 +16,10 @@ interface CalendarState {
   reminders: { [id: string]: Reminder };
 }
 
+export const initialState: CalendarState = { page: [], reminders: {}, currentView: moment() };
+
 export default (
-  state: CalendarState = { page: [], reminders: {}, currentView: moment() },
+  state: CalendarState = initialState,
   action: CalendarActionTypes
 ): CalendarState => {
   switch (action.type) {

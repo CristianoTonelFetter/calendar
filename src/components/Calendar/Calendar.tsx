@@ -18,6 +18,7 @@ import Reminder, { ReminderList } from '../../types/Reminder';
 import { AppState } from '../../reducers/rootReducer';
 import { AppActions } from '../../actions';
 import {
+  deleteReminder,
   createReminder,
   updateReminder,
   buildCalendarPage,
@@ -28,6 +29,7 @@ import style from './Calendar.module.scss';
 import { CalendarPage } from '../../types/CalendarPage';
 
 type DispatchToProps = {
+  deleteReminder: (item: Reminder) => void;
   createReminder: (item: Reminder) => void;
   updateReminder: (item: Reminder) => void;
   buildCalendarPage: (date: Moment) => void;
@@ -87,7 +89,7 @@ const Calendar: React.FC<Props> = (props) => {
             key={`monthDay_${date.format('YYYY-MM-DD')}`}
             className={belongsToSelectedMonth(date) ? style.disabled : ''}
             onClickEvent={onClickEvent}
-            events={props.reminders}
+            reminders={props.reminders}
             date={date}
           />
         ))}
@@ -115,6 +117,13 @@ const Calendar: React.FC<Props> = (props) => {
     }
   }
 
+  const onDeleteEvent = (reminder: Reminder): void => {
+    const { deleteReminder } = props;
+    if (reminder.id) {
+      deleteReminder(reminder);
+    }
+  }
+
   return (
     <>
       <div className={style.calendar}>
@@ -134,6 +143,7 @@ const Calendar: React.FC<Props> = (props) => {
           reminder={selectedReminder}
           onClose={unSelectEvent}
           onSave={onSaveEvent}
+          onDelete={onDeleteEvent}
         />
       )}
     </>
@@ -147,6 +157,7 @@ const mapStateToProps = (state: AppState): StateToProps => ({
 });
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): DispatchToProps => ({
+  deleteReminder: bindActionCreators(deleteReminder, dispatch),
   createReminder: bindActionCreators(createReminder, dispatch),
   updateReminder: bindActionCreators(updateReminder, dispatch),
   buildCalendarPage: bindActionCreators(buildCalendarPage, dispatch),

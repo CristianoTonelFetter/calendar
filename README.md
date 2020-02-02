@@ -1,4 +1,41 @@
+# React / Redux / Typescript calendar
+
+## Mandatory features
+
+- [OK] Ability to add a new "reminder" (max 30 chars) for a user entered day and time. Also,
+  include a city.
+- [OK] Display reminders on the calendar view in the correct time order.
+- [OK] Allow the user to select color when creating a reminder and display it appropriately.
+- [OK] Ability to edit reminders – including changing text, city, day, time and color.
+- [OK] Add a weather service call from a free API such as Open Weather Map, and get the
+  weather forecast (ex. Rain) for the date of the calendar reminder based on the city.
+- [OK] Unit test the functionality: Ability to add a new "reminder" (max 30 chars) for a user
+  entered day and time. Also, include a city.
+
+## Bonuses
+
+- [OK] Expand the calendar to support more than the current month.
+- [OK] Properly handle overflow when multiple reminders appear on the same date.
+- [NO, only possible to delete a single one]Functionality to delete one or ALL the reminders for a specific day
+
+## Forecast API
+
+The free plan of [Open weather](https://openweathermap.org/forecast16) supports only a few days, so you'll be able to see about 5-6 days from the current one. You can type the city name or change the date/time and it will fetch the weather prediction data.
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Libraries used
+
+- [Moment](https://momentjs.com/)
+- [Lodash](https://lodash.com/)
+- [Redux thunk](https://github.com/reduxjs/redux-thunk)
+
+## UI compoents used
+
+- [Material-ui](https://material-ui.com/)
+- [react-color](https://casesandberg.github.io/react-color/)
 
 ## Available Scripts
 

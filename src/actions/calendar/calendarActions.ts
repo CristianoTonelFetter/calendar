@@ -20,6 +20,7 @@ import { CalendarActionTypes } from './types';
 import { AppState } from '../../reducers/rootReducer';
 import Reminder from '../../types/Reminder';
 import { CalendarPage } from '../../types/CalendarPage';
+import getDaysInMonth from '../../utils/getDaysInMonth';
 
 export const buildCalendarPageStart = (currentView: Moment): CalendarActionTypes => {
   return {
@@ -111,12 +112,11 @@ export const deleteReminderFail = (payload: any): CalendarActionTypes => {
 /******* action creators ********/
 
 // create
-export const createReminder = (item: Reminder) => async (
+export const createReminder = (item: Reminder) => (
   dispatch: Dispatch<CalendarActionTypes>,
   getState: () => AppState
-): Promise<any> => {
+): void => {
   dispatch(createReminderStart());
-
   try {
     dispatch(createReminderSuccess(item));
   } catch (error) {
@@ -125,7 +125,7 @@ export const createReminder = (item: Reminder) => async (
 };
 
 // update
-export const updateReminder = (item: Reminder) => async (
+export const updateReminder = (item: Reminder) => (
   dispatch: Dispatch<CalendarActionTypes>,
   getState: () => AppState
 ) => {
@@ -137,23 +137,26 @@ export const updateReminder = (item: Reminder) => async (
   }
 };
 
-const getDaysInMonth = (currentDate: Moment): Moment[] => {
-  const newDate = moment(currentDate);
-  const days = [moment(newDate)];
+// update
+export const deleteReminder = (item: Reminder) => (
+  dispatch: Dispatch<CalendarActionTypes>,
+  getState: () => AppState
+) => {
+  dispatch(deleteReminderStart());
 
-  while (newDate.format('YYYY/MM') === currentDate.format('YYYY/MM')) {
-    const pushDate = moment(newDate.add(1, 'days'));
-    days.push(pushDate);
+  try {
+    dispatch(deleteReminderSuccess(item));
+  } catch (error) {
+    dispatch(updateReminderFail(error));
   }
-
-  return days;
 };
 
-export const buildCalendarPage = (date: Moment) => async (
+export const buildCalendarPage = (date: Moment) => (
   dispatch: Dispatch<CalendarActionTypes>,
   getState: () => AppState
 ) => {
   dispatch(buildCalendarPageStart(date));
+
   try {
     const currentDate = moment(date);
     const monthDays = getDaysInMonth(currentDate);
@@ -173,11 +176,9 @@ export const buildCalendarPage = (date: Moment) => async (
     }
 
     const extraCells = CALENDAR_GRID_COLUMNS * CALENDAR_GRID_ROWS - monthDays.length;
-    // const extraCells = monthDays.length % GRID_COLUMNS;
 
     // Fill slots at the end of days list if needed
     if (extraCells > 0) {
-      // for (let i = 1; i <= GRID_COLUMNS - extraCells; i++) {
       for (let i = 1; i <= extraCells; i++) {
         // Add one day
         const extraDay = moment(monthDays[monthDays.length - i]).add(i, 'days');

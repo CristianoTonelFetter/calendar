@@ -5,6 +5,7 @@ import {
   BUILD_CALENDAR_PAGE_SUCCESS,
   CREATE_REMINDER_SUCCESS,
   UPDATE_REMINDER_SUCCESS,
+  DELETE_REMINDER_SUCCESS,
 } from '../constants';
 import { CalendarActionTypes } from '../actions/calendar/types';
 import { CalendarPage } from '../types/CalendarPage';
@@ -40,6 +41,21 @@ export default (
         ...state.reminders,
         [id]: get(action, 'payload'),
       };
+
+      const newState = {
+        ...state,
+        reminders: newList,
+      };
+
+      return newState;
+    }
+    case DELETE_REMINDER_SUCCESS: {
+      const id = get(action, 'payload.id');
+      const newList = {
+        ...state.reminders,
+      };
+
+      delete newList[id];
 
       const newState = {
         ...state,

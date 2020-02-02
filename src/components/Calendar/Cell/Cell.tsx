@@ -1,5 +1,5 @@
 // Deps
-import React from 'react';
+import React, { ReactFragment } from 'react';
 import moment, { Moment } from 'moment';
 import classNames from 'classnames';
 
@@ -16,33 +16,44 @@ type Props = {
   date: Moment,
   className: string,
   onClickEvent: (reminder: Reminder) => void,
-  events: { [id: string]: Reminder }
+  reminders: { [id: string]: Reminder }
 }
 
 const Cell: React.FC<Props> = (props) => {
-  const { date, className, onClickEvent, events } = props;
+  const { date, className, onClickEvent, reminders } = props;
   const handleClickEvent = (reminder: Reminder) => () => onClickEvent(reminder);
   const getSampleEvent = () => ({ ...SAMPLE_EVENT, dateTime: date.toDate(), color: randomHexColor() });
 
+  const buildReminderList = (): ReactFragment => {
+    return Object.values(reminders)
+      .filter((reminder: Reminder) =>
+        moment(reminder.dateTime).format('MMM/D/YYYY') === date.format('MMM/D/YYYY'))
+      .sort((a, b) => {
+        const timestampA = a.dateTime.getTime();
+        const timestampB = b.dateTime.getTime();
+        if (timestampA > timestampB) return 1;
+        if (timestampA < timestampB) return -1;
+        return 0;
+      })
+      .map((reminder: Reminder) => (
+        <button
+          key={reminder.id}
+          onClick={handleClickEvent(reminder)}
+          className={style.reminder}
+          style={{
+            backgroundColor: reminder.color,
+          }}
+        >
+          {moment(reminder.dateTime).format('HH:mm')} {reminder.title}
+        </button>
+      ))
+  }
+
   return (
     <div className={classNames(style.cell, className)}>
-      <div className={style.dayLabel} onClick={handleClickEvent(getSampleEvent())}>{date.format('D MMM')}</div>
-      <div className={style.eventsContainer}>
-        {Object.values(events)
-          .filter((event: Reminder) =>
-            moment(event.dateTime).format('MMM/D/YYYY') === date.format('MMM/D/YYYY'))
-          .map((event: Reminder) => (
-            <button
-              key={event.id}
-              onClick={handleClickEvent(event)}
-              className={style.event}
-              style={{
-                backgroundColor: event.color,
-              }}
-            >
-              {event.title}
-            </button>
-          ))}
+      <div className={style.dayLabel} onClick={handleClickEvent(getSampleEvent())}>{date.format('D')}</div>
+      <div className={style.remindersContainer}>
+        {buildReminderList()}
       </div>
     </div>
   );

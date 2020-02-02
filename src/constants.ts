@@ -24,7 +24,6 @@ export const SAMPLE_EVENT = {
   title: 'New reminder',
   dateTime: new Date(),
   city: 'New York',
-  country: 'US',
   color: randomHexColor(),
 };
 

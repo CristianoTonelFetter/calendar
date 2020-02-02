@@ -11,6 +11,13 @@
   }
 }
 
+.forecastBox {
+  padding: 1em;
+  background-color: #eeeeee;
+  color: #666666;
+  font-size: 0.8em;
+}
+
 .field {
   width: 100%;
 }
@@ -34,9 +41,12 @@
 }
 
 .buttonBar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   padding-top: 1em;
   text-align: right;
-  button:last-child {
+  div > button:nth-child(2) {
     margin-left: 1em;
   }
 }

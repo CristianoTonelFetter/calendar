@@ -3,7 +3,6 @@ export default interface Reminder {
   title: string;
   dateTime: Date;
   city: string;
-  country: string;
   color: string;
 }
 
